@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace app\models;
 
 use Yii;
@@ -6,7 +6,7 @@ use yii\base\Model;
 
 class ModelSearch extends Model
 {
-	public $article;
+    public $article;
     public $brand;
 
     private $parseSiteList;
@@ -14,7 +14,8 @@ class ModelSearch extends Model
     public function __construct()
     {
         $this->parseSiteList = array(
-            'test' => new \app\Repo\test('test.com')
+//            'test' => new \app\Repo\test('test.com'),
+            'ecat' => new \app\Repo\ecat('ecat.ua')
         );
         parent::__construct();
     }
@@ -34,8 +35,12 @@ class ModelSearch extends Model
         if (!$this->validate()) {
             return null;
         }
-        echo '<pre>'; print_r($this->parseSiteList['test']->find($this->article, $this->brand)); echo '</pre>';
-        return $result;
+        foreach ($this->parseSiteList as $list_key => $value){
+             $value->find($this->article, $this->brand);
+//            echo $link;
+//            $result=  $link;
     }
+return $result;
 }
- ?> 
+}
+?>
