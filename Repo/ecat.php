@@ -3,30 +3,39 @@ namespace app\Repo;
 
 use Yii;
 use GuzzleHttp\Client;
+use GuzzleHttp\Cookie\SessionCookieJar;
 use phpQuery;
 
 class ecat extends BaseRepo
 {
-    private $shablone;
     private $oridgiral_prise = array();
 
     public function find($article, $brand = '')
     {
         $jar = new \GuzzleHttp\Cookie\CookieJar;
         $brand = 'False';
-        $idadd = 'ctl00_cphBody_ArticleBrowserCtl_lvParts_';
-        $client = new Client(['cookies' => true]);
+        $cookieFile = 'jar.txt';
+        $lin = 'http://ecat.ua/Rul-ova-tyaga-SIDEM-SDM-19010/005JlJFRlBBR0U9QXJ0aWNsZUJyb3dzZXImVFQ9ZnR4JlBhcnREZXRhaWxJRD1TRE0gMTkwMTA=';
+        $cookieJar = new FileCookieJar($cookieFile);
+
+        $client = new Client(['cookies' => $cookieFile]);
+
 //        $res = $client->request('GET', "http://ecat.ua/ArticleBrowser.aspx?TT=ftx&SearchPtn=" . $article . "+&EM=" . $brand . "");
-        $res = $client->request('GET', "http://ecat.ua/Rul-ova-tyaga-SIDEM-SDM-19010/005JlJFRlBBR0U9QXJ0aWNsZUJyb3dzZXImVFQ9ZnR4JlBhcnREZXRhaWxJRD1TRE0gMTkwMTA=");
+        $res = $client->request('GET', $lin);
         if ($res->getStatusCode() == 200) {
             if ($res->hasHeader('content-length')) {
+                $headers = $res->getHeaders();
+//                $values = $res->getHeader('Set-Cookie', true);
+//                foreach ($values as $value) {
+//                    echo $value;
+//                }
 //               echo $contentLength=$res->getHeader('x-test-header');
             }
 //             $res->getProtocol();        // >>> HTTP
         }
-        $body = $res->getBody(true);
+//        $body = $res->getBody(true);
 //        ctl00_styleMain
-        $document = phpQuery::newDocumentHTML($body);
+//        $document = phpQuery::newDocumentHTML($body);
 
 //         $product_a = $document->find("link[id=ctl00_styleMain]")->attr('href');
 //         $r = substr($product_a, 2);
@@ -36,27 +45,68 @@ class ecat extends BaseRepo
 //                $body_2 = $res_2->getBody(true);
 //        }
 //           echo "__doPostBack('ctl00$cphBody$ArtDetailControl$lbOENumbers','')";
-        $headers = ['Host' => 'ecat.ua',
-            'User-Agent' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language' => 'uk,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-            'Accept-Encoding' => 'gzip, deflate',
-            'Referer' => 'http://ecat.ua/Rul-ova-tyaga-SIDEM-SDM-19010/005JlJFRlBBR0U9QXJ0aWNsZUJyb3dzZXImVFQ9ZnR4JlBhcnREZXRhaWxJRD1TRE0gMTkwMTA=',
-            'Cookie' => 'history-guid-cookie=68417053-bf08-47d9-9ecc-b3574807ac37; _ga=GA1.2.756972817.1478180818; homepagerotation=1; Culture=ru-RU; ASP.NET_SessionId=awx45kwlubstak4ecbnmhcku; BALANCEID=ecatclusternew.node88; _gat=1',
-            'Connection' => 'keep-alive',
-            'Upgrade-Insecure-Requests' => '1'];
+        $parametrs = "__EVENTTARGET=ctl00%24cphBody%24ArtDetailControl%24lbOENumbers&__EVENTARGUMENT=&__VIEWSTATE=&__SCROLLPOSITIONX
+=0&__SCROLLPOSITIONY=0&ctl00%24tbDebugHidden=11.11.2016+00%3A12%3A28%3A1629+%2F+y2g2lfsymieoru00z5tmcdmj
++%2F+e9e15cd0-7214-4c09-a1b4-6b849b8b76d6&ctl00%24cphMenu%24MenuControl%24tbSearch=%D0%98%D1%81%D0%BA
+%D0%BE%D0%BC%D1%8B%D0%B9+%D0%BD%D0%BE%D0%BC%D0%B5%D1%80+%D0%BD%D0%B0%D1%87%D0%B8%D0%BD%D0%B0%D0%B5%D1
+%82%D1%81%D1%8F+%D1%81&langmenu=ru-RU&ctl00%24cphSB%24SBC%24jstreeInitData=%5B%5D&ctl00%24ContentPlaceHolder1
+%24LoginControl%24tbLoginUser=&ctl00%24ContentPlaceHolder1%24LoginControl%24tbLoginPass=&ctl00%24cphBody
+%24ArtDetailControl%24tbQuantity=1&ctl00%24cphBody%24ArtDetailControl%24OEDeliveryListCtl%24tbOELightBoxQuantity
+=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBox311+929defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBox713
++6106+10defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxOX191Ddefpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl
+%24lbBuyAlsoBox70+93+6613defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBox0.022283defpcs=1&ctl00
+%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxLX935defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxSDM
++19189defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxS+LO+03596defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl
+%24lbBuyAlsoBoxS+TL+MKT100defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxS+LA+BR.1673defpcs=1
+&ctl00%24AvaibilityOrderId=&ctl00%24AvaibilityOrderValue=&ctl00%24LoginControlM%24tbLoginUser=&ctl00
+%24LoginControlM%24tbLoginPass=&__DATABASE_VIEWSTATE=474533323";
+//        var_dump($headers['Set-Cookie'][1]);
+//        echo '<pre>';
+//        print_r($headers);
+//        echo  '</pre>';
 
+        $res2 = $client->request('POST', $lin, ['body' => $parametrs], ['headers' => [
+            'Date' => 'Fri, 11 Nov 2016 03:27:38 GMT',
+            'Server' => $headers['Date'][0],
+            'Server' => $headers['Server'][0],
+            'Cache-Control' => $headers['Cache-Control'][0],
+            'Content-Type' => $headers['Content-Type'][0],
+            'X-AspNet-Version' => $headers['X-AspNet-Version'][0],
+            'X-Powered-By' => $headers['X-Powered-By'][0],
+            'Content-Length' => $headers['Content-Length'][0],
+            'Set-Cookie' => [$headers['Set-Cookie'][0],
+                $headers['Set-Cookie'][1],
+                $headers['Set-Cookie'][2],
+                $headers['Set-Cookie'][3],
+                $headers['Set-Cookie'][4],
+                $headers['Set-Cookie'][5]
+            ],
+            'Vary' => $headers['Vary'][0]
 
-//        http://ecat.ua/Rul-ova-tyaga-SIDEM-SDM-19010/005JlJFRlBBR0U9QXJ0aWNsZUJyb3dzZXImVFQ9ZnR4JlBhcnREZXRhaWxJRD1TRE0gMTkwMTA=
-//        http://ecat.ua/Rul-ova-tyaga-SIDEM-SDM-19010/005JlJFRlBBR0U9QXJ0aWNsZUJyb3dzZXImVFQ9ZnR4JlBhcnREZXRhaWxJRD1TRE0gMTkwMTA=
-        $res2 = $client->request('POST', "http://ecat.ua/Rul-ova-tyaga-SIDEM-SDM-19010/005JlJFRlBBR0U9QXJ0aWNsZUJyb3dzZXImVFQ9ZnR4JlBhcnREZXRhaWxJRD1TRE0gMTkwMTA=", ['headers' => $headers,]);
+        ]]);
         if ($res2->getStatusCode() == 200) {
             echo 1;
-            echo $body2 = $res2->getBody(true);
+            $headers2 = $res2->getHeaders();
+//            var_dump($headers2);
+            $res3 = $client->request('GET', $lin, ['body' => $parametrs],['headers' => [
+                'Date' => $headers2['Date'][0],
+                'Server' => $headers2['Server'][0],
+                'Cache-Control' => $headers2['Cache-Control'][0],
+                'Content-Type' => $headers2['Content-Type'][0],
+                'X-AspNet-Version' => $headers2['X-AspNet-Version'][0],
+                'X-Powered-By' => $headers2['X-Powered-By'][0],
+                'Content-Length' => $headers2['Content-Length'][0],
+                'Set-Cookie' => [
+                    $headers2['Set-Cookie'][0],
+                    $headers2['Set-Cookie'][1]
+                ],
+                'Vary' => $headers2['Vary'][0]
 
-            $res3 = $client->request('GET', "http://ecat.ua/Rul-ova-tyaga-SIDEM-SDM-19010/005JlJFRlBBR0U9QXJ0aWNsZUJyb3dzZXImVFQ9ZnR4JlBhcnREZXRhaWxJRD1TRE0gMTkwMTA=");
+            ]]);
             if ($res3->getStatusCode() == 200) {
                 echo 2;
-
+               echo  $body3 = $res3->getBody(true);
+//var_dump($body3);die;
 //                echo $body = $res3->getBody(true);
 
             }
