@@ -14,7 +14,7 @@ class ModelSearch extends Model
     public function __construct()
     {
         $this->parseSiteList = array(
-            'test' => new \app\Repo\test('test.com')
+            'test' => new \app\Repo\test('test.com'),
         );
         parent::__construct();
     }
@@ -22,9 +22,14 @@ class ModelSearch extends Model
     public function rules()
     {
         return [
+            [['article', 'brand'], 'string'],
+
             ['article', 'trim'],
             ['article', 'required'],
             ['article', 'string', 'min' => 2, 'max' => 255],
+
+            ['brand', 'trim'],
+
         ];
     }
 
@@ -34,7 +39,7 @@ class ModelSearch extends Model
         if (!$this->validate()) {
             return null;
         }
-        echo '<pre>'; print_r($this->parseSiteList['test']->find($this->article, $this->brand)); echo '</pre>';
+        $this->parseSiteList['test']->find($this->article, $this->brand);
         return $result;
     }
 }
