@@ -3,32 +3,154 @@ namespace app\Repo;
 
 use Yii;
 use GuzzleHttp\Client;
-use GuzzleHttp\Cookie\SessionCookieJar;
+use GuzzleHttp\Cookie\FileCookieJar;
+
+//use GuzzleHttp\Cookie\SessionCookieJar;
+//
 use phpQuery;
 
 class ecat extends BaseRepo
 {
-    private $oridgiral_prise = array();
+    private $orignally_product = array();
+    private $replacement_product=array();
+    protected $article_replacement;
+//    protected $oridginal_ling;
+    protected $link_replacement;
+    protected $option_replacment;
+    protected $cookieFile = 'jar.txt';
+protected    $all_number_product= array();
+
+
+    public function find_option_article($article_replacement,  $replacement_product=0)
+    {
+          isset($replacement_product[0]);
+        $cookieJar2 = new FileCookieJar($this->cookieFile);
+        $client2 = new Client(["base_uri" => "http://ecat.ua", 'cookies' => $cookieJar2]);
+        $re = $client2->request('GET', "http://ecat.ua/ArticleBrowser.aspx?TT=ftx&SearchPtn=" . $article_replacement . "+&EM=");
+        if ($re->getStatusCode() == 200) {
+
+            $b2 = $re->getBody(true);
+            $d = phpQuery::newDocumentHTML($b2);
+            $id_td = 'ctl00_cphBody_ArticleBrowserCtl_lvParts_tblAdvancedBrowser';
+            $td = $d->find(" table[id^={$id_td}] td:nth-child(2) a");
+//            $ArtBrowserCtlOENumbers = $document2->find("table[id^={$table_id}] td:nth-child(2) span");
+
+            foreach ($td as $link) {
+
+                 $stac_replase[]=pq($link)->text();
+                  pq($link)->attr('href');
+            }
+
+             $res = array_diff($stac_replase, $replacement_product);
+
+              $table = $d->find(" table[id^={$id_td}]");
+            foreach ($res as $td_replacment)
+            {
+                 $td_replacment;
+//                echo "<br>";
+                $key = str_replace(" ","",$td_replacment);
+                $l2_replacment = $table->find("td[id$={$key}]")->eq(1);
+                $replacment_ling = pq($l2_replacment)->find("a")->attr('href');
+                $l2_replacment = $table->find("td[id$={$key}]")->eq(1);
+                $number_replacment = pq($l2_replacment)->find("a")->text();
+                $l1_replacment = $table->find("td[id$={$key}]")->eq(2);
+                $name_replacment = pq($l1_replacment)->find("span")->text();
+
+                $l3_replacment = $table->find("td[id$={$key}]")->eq(3);
+                $supplier_replacment = pq($l3_replacment)->find("span")->text();
+                $l4_replacment = $table->find("td[id$={$key}]")->eq(5);
+                $available_replacment = pq($l4_replacment)->find("input")->eq(0)->val();
+                $l6_replacment = $table->find("td[id$={$key}]")->eq(4);
+                $price_replacment = (float)pq($l6_replacment)->find("span")->text();
+
+                $this->option_replacment[] = ['number' => $number_replacment, 'name' => $name_replacment, 'supplier' => $supplier_replacment, 'available' => $available_replacment, 'order_links' => $replacment_ling, 'price' => $price_replacment];
+            }
+
+        }
+        return $this->option_replacment;
+    }
 
     public function find($article, $brand = '')
     {
         $jar = new \GuzzleHttp\Cookie\CookieJar;
         $brand = 'False';
         $cookieFile = 'jar.txt';
-        $lin = 'http://ecat.ua/Rul-ova-tyaga-SIDEM-SDM-19010/005JlJFRlBBR0U9QXJ0aWNsZUJyb3dzZXImVFQ9ZnR4JlBhcnREZXRhaWxJRD1TRE0gMTkwMTA=';
         $cookieJar = new FileCookieJar($cookieFile);
+//        $cookieJar = new SessionCookieJar('SESSION_STORAGE', true);
+        $client = new Client(["base_uri" => "http://ecat.ua", 'cookies' => $cookieJar]);
 
-        $client = new Client(['cookies' => $cookieFile]);
+        $res0 = $client->request('GET', "http://ecat.ua/ArticleBrowser.aspx?TT=ftx&SearchPtn=" . $article . "+&EM=");
+        if ($res0->getStatusCode() == 200) {
+            $body0 = $res0->getBody(true);
+            $document0 = phpQuery::newDocumentHTML($body0);
+//            $idadd = 'ctl00_cphBody_ArtDetailControl_ArtBrowserCtlOENumbers';
+            $idadd = 'ctl00_cphBody_ArticleBrowserCtl_lvParts_Item';
+            $links = $document0->find(" td[id^={$idadd}]>a");
+            foreach ($links as $link) {
+//              echo  pq($link)->text() . '<br>';die;
+//          echo  $name_link = pq($link)->text();
+//            $result1[][1] = preg_match_all($this->shablone, $name_link, $resul);
+//            if ($resul) {
+//                echo pq($link)->attr('href');
+//            }
+                $name_product2 = pq($link)->text();
+                $aray_name_produrct = explode(" ", $name_product2);
+//            var_dump($aray_name_produrct);
+                foreach ($aray_name_produrct as $poduct) {
+//                var_dump($poduct);
 
-//        $res = $client->request('GET', "http://ecat.ua/ArticleBrowser.aspx?TT=ftx&SearchPtn=" . $article . "+&EM=" . $brand . "");
-        $res = $client->request('GET', $lin);
+                    if ($poduct === $article) {
+//                    var_dump($poduct);
+                        $tr_oridginal = $idadd . $poduct;
+
+                        $oridginal_ling = pq($link)->attr('href');
+                        $l2 = $document0->find("td[id$={$poduct}]")->eq(1);
+                        $number = pq($l2)->find("a")->text();
+                        $l1 = $document0->find("td[id$={$poduct}]")->eq(2);
+                        $name = pq($l1)->find("span")->text();
+
+                        $l3 = $document0->find("td[id$={$poduct}]")->eq(3);
+                        $supplier = pq($l3)->find("a")->eq(0)->text();
+                        $l4 = $document0->find("td[id$={$poduct}]")->eq(5);
+                        $available = pq($l4)->find("input")->eq(0)->val();
+                        $l6 = $document0->find("td[id$={$poduct}]")->eq(4);
+                        $price = (float)pq($l6)->find("span")->text();
+                        $this->orignally_product = ['number' => $number, 'name' => $name, 'supplier' => $supplier, 'available' => $available, 'order_links' => $oridginal_ling, 'price' => $price];
+//                        var_dump($this->orignally_product);
+                    }
+                }
+//            var_dump($result1);
+//            $result1[]=preg_match("/".$article."/",$name_link);
+//                var_dump($result1);
+//            if ($result1) {
+//                echo "Вхождение найдено.";
+//                echo pq($link)->attr('href').'<br>';
+//            echo pq($link);
+//            } else {
+//                echo "Вхождение не найдено.";
+//            }
+//            echo pq($link);
+//            var_dump($link);
+//            preg_match();
+            }
+//         echo  $l = $document0->find("tr[id^={$idadd}]>a");
+//            echo "<pre>";
+////            print_r($l);
+//            echo "</pre>";
+//
+
+
+        }
+
+        $res = $client->request('GET', $this->orignally_product['order_links']);
         if ($res->getStatusCode() == 200) {
             if ($res->hasHeader('content-length')) {
-                $headers = $res->getHeaders();
-//                $values = $res->getHeader('Set-Cookie', true);
-//                foreach ($values as $value) {
-//                    echo $value;
-//                }
+                $values = $res->getHeader('Set-Cookie', true);
+                $body = $res->getBody(true);
+                $document = phpQuery::newDocumentHTML($body);
+                $n = 'ctl00$tbDebugHidden';
+                $product_a = $document->find("input[name=__DATABASE_VIEWSTATE]")->val();
+                $product_b = $document->find("input[name={$n}]")->val();
 //               echo $contentLength=$res->getHeader('x-test-header');
             }
 //             $res->getProtocol();        // >>> HTTP
@@ -45,72 +167,77 @@ class ecat extends BaseRepo
 //                $body_2 = $res_2->getBody(true);
 //        }
 //           echo "__doPostBack('ctl00$cphBody$ArtDetailControl$lbOENumbers','')";
-        $parametrs = "__EVENTTARGET=ctl00%24cphBody%24ArtDetailControl%24lbOENumbers&__EVENTARGUMENT=&__VIEWSTATE=&__SCROLLPOSITIONX
-=0&__SCROLLPOSITIONY=0&ctl00%24tbDebugHidden=11.11.2016+00%3A12%3A28%3A1629+%2F+y2g2lfsymieoru00z5tmcdmj
-+%2F+e9e15cd0-7214-4c09-a1b4-6b849b8b76d6&ctl00%24cphMenu%24MenuControl%24tbSearch=%D0%98%D1%81%D0%BA
-%D0%BE%D0%BC%D1%8B%D0%B9+%D0%BD%D0%BE%D0%BC%D0%B5%D1%80+%D0%BD%D0%B0%D1%87%D0%B8%D0%BD%D0%B0%D0%B5%D1
-%82%D1%81%D1%8F+%D1%81&langmenu=ru-RU&ctl00%24cphSB%24SBC%24jstreeInitData=%5B%5D&ctl00%24ContentPlaceHolder1
-%24LoginControl%24tbLoginUser=&ctl00%24ContentPlaceHolder1%24LoginControl%24tbLoginPass=&ctl00%24cphBody
-%24ArtDetailControl%24tbQuantity=1&ctl00%24cphBody%24ArtDetailControl%24OEDeliveryListCtl%24tbOELightBoxQuantity
-=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBox311+929defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBox713
-+6106+10defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxOX191Ddefpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl
-%24lbBuyAlsoBox70+93+6613defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBox0.022283defpcs=1&ctl00
-%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxLX935defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxSDM
-+19189defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxS+LO+03596defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl
-%24lbBuyAlsoBoxS+TL+MKT100defpcs=1&ctl00%24cphBody%24BuyAlsoBoxCtl%24lbBuyAlsoBoxS+LA+BR.1673defpcs=1
-&ctl00%24AvaibilityOrderId=&ctl00%24AvaibilityOrderValue=&ctl00%24LoginControlM%24tbLoginUser=&ctl00
-%24LoginControlM%24tbLoginPass=&__DATABASE_VIEWSTATE=474533323";
+        $parametrs = ['__DATABASE_VIEWSTATE' => $product_a,
+            '__EVENTTARGET' => 'ctl00$cphBody$ArtDetailControl$lbOENumbers',
+            'ctl00$cphBody$ArtDetailControl$ArtBrowserCtlOENumbers$OEDeliveryListCtl$tbOELightBoxQuantity' => '1',
+            'ctl00$cphBody$ArtDetailControl$ArtBrowserCtlOENumbers$rbsTemplate' => '1',
+            'ctl00$cphBody$ArtDetailControl$ArtBrowserCtlOENumbers$scrollLeft' => '0',
+            'ctl00$cphBody$ArtDetailControl$ArtBrowserCtlOENumbers$scrollTop' => '0',
+            'ctl00$cphBody$ArtDetailControl$OEDeliveryListCtl$tbOELightBoxQuantity' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBox0.022283defpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBox311 929defpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBox70 93 6613defpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBox713 6106 10defpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBoxLX935defpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBoxOX191Ddefpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBoxS LA BR.1673defpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBoxS LO 03596defpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBoxS TL MKT100defpcs' => '1',
+            'ctl00$cphBody$BuyAlsoBoxCtl$lbBuyAlsoBoxSDM 19189defpcs' => '1',
+            'ctl00$cphMenu$MenuControl$tbSearch' => 'Искомый номер начинается с',
+            'ctl00$cphSB$SBC$jstreeInitData' => [],
+            'ctl00$tbDebugHidden' => $product_b,
+            'langmenu' => 'ru-RU'
+        ];
 //        var_dump($headers['Set-Cookie'][1]);
 //        echo '<pre>';
 //        print_r($headers);
 //        echo  '</pre>';
 
-        $res2 = $client->request('POST', $lin, ['body' => $parametrs], ['headers' => [
-            'Date' => 'Fri, 11 Nov 2016 03:27:38 GMT',
-            'Server' => $headers['Date'][0],
-            'Server' => $headers['Server'][0],
-            'Cache-Control' => $headers['Cache-Control'][0],
-            'Content-Type' => $headers['Content-Type'][0],
-            'X-AspNet-Version' => $headers['X-AspNet-Version'][0],
-            'X-Powered-By' => $headers['X-Powered-By'][0],
-            'Content-Length' => $headers['Content-Length'][0],
-            'Set-Cookie' => [$headers['Set-Cookie'][0],
-                $headers['Set-Cookie'][1],
-                $headers['Set-Cookie'][2],
-                $headers['Set-Cookie'][3],
-                $headers['Set-Cookie'][4],
-                $headers['Set-Cookie'][5]
-            ],
-            'Vary' => $headers['Vary'][0]
-
-        ]]);
+        $res2 = $client->request('POST', $this->orignally_product['order_links'], ['form_params' => $parametrs]);
         if ($res2->getStatusCode() == 200) {
             echo 1;
-            $headers2 = $res2->getHeaders();
-//            var_dump($headers2);
-            $res3 = $client->request('GET', $lin, ['body' => $parametrs],['headers' => [
-                'Date' => $headers2['Date'][0],
-                'Server' => $headers2['Server'][0],
-                'Cache-Control' => $headers2['Cache-Control'][0],
-                'Content-Type' => $headers2['Content-Type'][0],
-                'X-AspNet-Version' => $headers2['X-AspNet-Version'][0],
-                'X-Powered-By' => $headers2['X-Powered-By'][0],
-                'Content-Length' => $headers2['Content-Length'][0],
-                'Set-Cookie' => [
-                    $headers2['Set-Cookie'][0],
-                    $headers2['Set-Cookie'][1]
-                ],
-                'Vary' => $headers2['Vary'][0]
+//           echo   $headers2 = $res2->getHeaders('Set-Cookie', true);
+            $body2 = $res2->getBody(true);
+            $document2 = phpQuery::newDocumentHTML($body2);
+//            ctl00_cphBody_ArtDetailControl_ArtBrowserCtlOENumbers_lvParts_ItemFTR5054_tdActiveNumberFTR5054
+//            ctl00_cphBody_ArtDetailControl_ArtBrowserCtlOENumbers_lvParts_Item915835_tdActiveNumber915835
+            $table_id = "ctl00_cphBody_ArtDetailControl_ArtBrowserCtlOENumbers_lvParts_";
+            $image_id = "";
 
-            ]]);
-            if ($res3->getStatusCode() == 200) {
-                echo 2;
-               echo  $body3 = $res3->getBody(true);
-//var_dump($body3);die;
-//                echo $body = $res3->getBody(true);
+            $stack_brand = array();
+            $ArtBrowserCtlOENumbers = $document2->find("table[id^={$table_id}] td:nth-child(2) span");
+//            $ArtBrowserCtlOENumbers = $document2->find("td[id^={$idadd}>span]");
+//            echo '<pre>';
+//            print_r($ArtBrowserCtlOENumbers);die;
+//            echo '</pre>';
+//            id="ctl00_cphBody_ArtDetailControl_ArtBrowserCtlOENumbers_lvParts_Item92-90189_TTDIV9c537bbc-40fe-43ba-8cdb-878ff6cc6839"
+
+            foreach ($ArtBrowserCtlOENumbers as $el) {
+//                $pq = pq($el);
+                if (pq($el)->text()) {
+                    $stack_brand[] = pq($el)->eq(-0)->text();
+                }
+            }
+//            var_dump($stack_brand);
+            $all_number_product= array();
+            foreach ($stack_brand as $stack_brand_key) {
+                if (isset($this->replacement_product)&&$stack_brand_key) {
+                    foreach ($this->replacement_product as $number) {
+                        $this->all_number_product[] = $number['number'];
+                    }
+                    $this->all_number_product[] = $this->orignally_product['number'];
+//                var_dump($this->all_number_product);
+                } elseif(isset($stack_brand_key)) {
+                    $this->all_number_product[] = $this->orignally_product['number'];
+                }
+                $th = $this->find_option_article($stack_brand_key, $this->all_number_product);
+//            var_dump($th);
+                $this->replacement_product = array_merge($this->replacement_product, $th);
 
             }
-
+            $result4444= array_unique($this->all_number_product);
+             print_r($result4444);
         }
 
 //          $name_link = pq($product_a)->text();
@@ -229,7 +356,7 @@ class ecat extends BaseRepo
 //        #ctl00_cphBody_ArticleBrowserCtl_lvParts_
 //        #ItemSDM19010_tdActiveNumberSDM19010 > a:nth-child(3)
         $result[$this->siteUrl] = array(
-//            'Origin' => $links_price,
+//            'Origin' => $orignally_product,
             'ReplacementOriginal' => array(),
             'replaceNonOriginal' => array()
         );

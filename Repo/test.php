@@ -17,7 +17,8 @@ class test extends BaseRepo
          foreach ($links as $link) {
          	echo pq($link)->attr('href').'<br>';
          }
-
+//		$cphBody$ArtDetailControl$lbDetailGoods;
+//		echo "<__doPostBack('ctl00{$cphBody$ArtDetailControl$lbDetailGoods}.'')";
 
 		$result[$this->siteUrl] = array(
 			'Origin' => array(), 
