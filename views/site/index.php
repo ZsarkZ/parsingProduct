@@ -22,4 +22,40 @@ $this->title = 'My Yii Application';
             <?php ActiveForm::end(); ?>
         </div>
     </div>
+    <?php if (!empty($dataResult)): ?>
+        <?php foreach ($dataResult as $productType => $siteList) : ?>
+            <table class="table table-bordered table-hover">
+                <caption>
+                    <?php if ($productType == 'Origin'): ?>
+                        Оригинальные товары
+                    <?php elseif ($productType == 'ReplacementOriginal') :?>
+                        Замена от оригинального производителя
+                    <?php else :?>
+                        Замена не от оригинального производителя
+                    <?php endif ?>
+                </caption>
+
+                <thead>
+                    <tr>
+                        <th>Артикул</th>
+                        <th>Названия</th>
+                        <th>Цена</th>
+                        <th>Ссылка на товар</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($siteList as $site => $siteData) : ?>
+                        <?php foreach ($siteData as $key => $data) : ?>
+                            <tr>
+                                <td><?=$data['number']?></td>
+                                <td><?=$data['name']?></td>
+                                <td><?=$data['price']?></td>
+                                <td><?=$data['order_links']?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </div>

@@ -16,8 +16,8 @@ class ModelSearch extends Model
         $this->parseSiteList = array(
             //'test'         => new \app\Repo\test('test.com'),
             //'ecat'         => new \app\Repo\ecat('ecat.ua'),
-            'autooriginal' => new \app\Repo\ecat('autooriginal.de'),
-            'avtoduma' => new \app\Repo\ecat('avtoduma.ua')
+            'autooriginal' => new \app\Repo\autooriginal('autooriginal.de'),
+            'avtoduma' => new \app\Repo\avtoduma('avtoduma.ua')
         );
         parent::__construct();
     }
@@ -43,10 +43,20 @@ class ModelSearch extends Model
             return null;
         }
         foreach ($this->parseSiteList as $key => $siteClass){
-            $result = array_merge($result, $siteClass->find($this->article, $this->brand));
+            $siteResult = $siteClass->find($this->article, $this->brand);
+            if (isset($result['Origin'])) {
+                $result['Origin'] = array_merge($result['Origin'], $siteResult['Origin']);
+            }
+            if (isset($result['ReplacementOriginal'])) {
+                $result['ReplacementOriginal'] = array_merge($result['ReplacementOriginal'], $siteResult['ReplacementOriginal']);
+            } 
+            if (isset($result['replaceNonOriginal'])) {
+               $result['replaceNonOriginal'] = array_merge($result['replaceNonOriginal'], $siteResult['replaceNonOriginal']);
+            }
+            if (empty($result)) {
+               $result = array_merge($result, $siteResult);
+            }
         }
-        echo '<pre>'; print_r($result); echo '</pre>';
-
         return $result;
     }
 }
