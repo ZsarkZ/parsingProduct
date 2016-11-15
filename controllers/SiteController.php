@@ -82,6 +82,11 @@ class SiteController extends Controller
             ]);
         }
     }
+//    public function actionGuzzel()
+//{
+//    return $this->render('guzzel');
+//}
+
 
     /**
      * Logs in a user.

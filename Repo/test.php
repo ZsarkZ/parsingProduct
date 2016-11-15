@@ -26,5 +26,9 @@ class test extends BaseRepo
 		);
 		return $result;
 	}
+//	public login($login , $parol){
+////	echo $login , $parol;
+//
+//}
 }
 ?> 
