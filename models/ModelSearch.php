@@ -15,7 +15,7 @@ class ModelSearch extends Model
     {
         $this->parseSiteList = array(
             //'test'         => new \app\Repo\test('test.com'),
-            //'ecat'         => new \app\Repo\ecat('ecat.ua'),
+            'ecat'         => new \app\Repo\ecat('ecat.ua'),
             'autooriginal' => new \app\Repo\autooriginal('autooriginal.de'),
             'avtoduma' => new \app\Repo\avtoduma('avtoduma.ua')
         );
